@@ -17,17 +17,10 @@ Set up Prometheus and Grafana monitoring stack for your swarm cluster. You shoul
 
 ## Step 1
 
-1- Start 3 Docker containers with Docker in Docker enabled
+1- Start 2 Docker containers with Docker in Docker enabled
 ```
-sudo docker run -d --privileged --name dind docker:dind
+sudo docker run -d --privileged --name dind-1 docker:dind
 sudo docker run -d --privileged --name dind-2 docker:dind
-sudo docker run -d --privileged --name dind-3 docker:dind
-
-```
-
-2- Enter the "dind" container, Inside the "dind" container:
-```
-docker swarm init --advertise-addr <IP_of_manager_node>
 ```
 
 3- Login to "dind-2" and "dind-3" containers. Inside them:
