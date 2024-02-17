@@ -17,6 +17,8 @@ Set up Prometheus and Grafana monitoring stack for your swarm cluster. You shoul
 
 ## Step 1
 
+0- First we clone project03 and change names to 04, then we change static ipv4s to container names / service names 
+
 1- Start 3 Docker containers with Docker in Docker enabled
 ```
 sudo docker run -d --privileged --name dind1 docker:dind
@@ -29,7 +31,9 @@ sudo docker run -d --privileged --name dind3 docker:dind
 docker swarm join --token <token> <IP_of_manager_node>:2377
 
 ```
-3- Change docker-compose.yml od project03 to be able to work with docker swarm
+## Step 2
+
+3- Change docker-compose.yml and other configs of project03 to be able to work with docker swarm
 
 new docker-compose.yml
 ```
@@ -37,42 +41,42 @@ version: '3'
 services:
 
   accounts:
-    image: pr03-account:1
+    image: pr04-account:1
     ports:
       - "8000:80"
-    container_name: pr03-account
+    container_name: pr04-account
     hostname: account
     networks:
-      - project03-overlay
+      - project04-overlay
 
 
   shop:
-    image: pr03-shop:1
+    image: pr04-shop:1
     ports:
       - "8001:80"
-    container_name: pr03-shop
+    container_name: pr04-shop
     hostname: shop
     networks:
-      - project03-overlay
+      - project04-overlay
 
 
   order:
-    image: pr03-order:1
+    image: pr04-order:1
     ports:
       - "8002:80"
-    container_name: pr03-order
+    container_name: pr04-order
     hostname: order
     networks:
-      - project03-overlay
+      - project04-overlay
 
 
   nginx:
-    image: pr03-nginx:3
+    image: pr04-nginx:2
     ports:
       - "9999:80"
-    container_name: pr03-nginx
+    container_name: pr04-nginx
     networks:
-      - project03-overlay
+      - project04-overlay
     depends_on:
       - accounts
       - shop
@@ -80,18 +84,50 @@ services:
 
 
   haproxy:
-    image: pr03-haproxy:1
+    image: pr04-haproxy:1
     ports:
       - "7777:80"
       - "8404:8404"
-    container_name: pr03-haproxy
+    container_name: pr04-haproxy
     networks:
-      - project03-overlay
+      - project04-overlay
+    depends_on:
+      - nginx
 
 networks:
-  project03-overlay:
+  project04-overlay:
     driver: overlay
 ```
 
+new pr04.conf
+```
+server {
+.
+.
+.
+    location /order {
+        proxy_pass http://project04_order:80;
+    }
+}
+```
+
+new haproxy.cfg
+```
+.
+.
+.
+backend nginx-backend
+    balance roundrobin
+    server nginx1 project04_nginx:80 check
+    server nginx2 project04_nginx:80 check
+    server nginx3 project04_nginx:80 check
+```
+
+4- Deploy the stack using:
+```
+ docker stack deploy -c docker-compose.yml project04
+```
+
+5- Access services via <IP-of-Manager-Node>:<Port>
 
 
