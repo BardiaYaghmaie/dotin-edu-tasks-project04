@@ -17,7 +17,7 @@ Set up Prometheus and Grafana monitoring stack for your swarm cluster. You shoul
 
 ## Step 1
 
-0- First we clone project03 and change names to 04, then we change static ipv4s to container names / service names 
+0- First we clone project03 and change names to 04, then we change static ipv4s to container names / service names
 
 1- Start 3 Docker containers with Docker in Docker enabled
 ```
@@ -122,12 +122,49 @@ backend nginx-backend
     server nginx2 project04_nginx:80 check
     server nginx3 project04_nginx:80 check
 ```
+*NOTE* 
+on ur main host that has browser run:
+```
+docker node update --label-add environment=prod <<hostname>>
+```
+```
+haproxy:
+    image: bardiayaghmaie/pr04-haproxy:1.2
+    ports:
+      - "7777:80"
+      - "8404:8404"
+    container_name: pr04-haproxy
+    
+    networks:
+      - project04-overlay
+    depends_on:
+      - nginx
+    deploy:
+      placement:
+       constraints:
+        - "node.hostname == example "
+```
+*add placement constraint to be able to see haproxy from a specefic node*
 
 4- Deploy the stack using:
 ```
  docker stack deploy -c docker-compose.yml project04
 ```
 
-5- Access services via <IP-of-Manager-Node>:<Port>
+5- Access services via ```<IP-of-ProdEnv>:<7777>```
 
+## Step3
 
+6- A rolling update scenario:
+```
+docker service scale project04_nginx=6
+```
+```
+docker build ./nginx/ -t pr04-nginx:2
+```
+docker service update --image pr04-nginx:2 project04_nginx
+```
+or for rollback
+```
+docker service update --rollback project04_nginx
+```

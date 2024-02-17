@@ -2,7 +2,7 @@ version: '3'
 services:
 
   accounts:
-    image: pr04-account:1
+    image: bardiayaghmaie/pr04-account:1.0
     ports:
       - "8000:80"
     container_name: pr04-account
@@ -12,7 +12,7 @@ services:
 
 
   shop:
-    image: pr04-shop:1
+    image: bardiayaghmaie/pr04-shop:1.0
     ports:
       - "8001:80"
     container_name: pr04-shop
@@ -22,7 +22,7 @@ services:
 
 
   order:
-    image: pr04-order:1
+    image: bardiayaghmaie/pr04-order:1.0
     ports:
       - "8002:80"
     container_name: pr04-order
@@ -32,7 +32,7 @@ services:
 
 
   nginx:
-    image: pr04-nginx:2
+    image: bardiayaghmaie/pr04-nginx:1.0
     ports:
       - "9999:80"
     container_name: pr04-nginx
@@ -45,15 +45,21 @@ services:
 
 
   haproxy:
-    image: pr04-haproxy:1
+    image: bardiayaghmaie/pr04-haproxy:1.2
     ports:
       - "7777:80"
       - "8404:8404"
     container_name: pr04-haproxy
+    
     networks:
       - project04-overlay
     depends_on:
       - nginx
+    deploy:
+      placement:
+        constraints:
+          - "node.hostname == DevSecOps"
+
 
 networks:
   project04-overlay:
