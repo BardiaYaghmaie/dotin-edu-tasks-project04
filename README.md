@@ -162,6 +162,7 @@ docker service scale project04_nginx=6
 ```
 docker build ./nginx/ -t pr04-nginx:2
 ```
+```
 docker service update --image pr04-nginx:2 project04_nginx
 ```
 or for rollback
